@@ -322,12 +322,6 @@ if [[ -n $argo ]]; then
 else
   echo "ArgoSB脚本进程未启动，安装失败" && exit
 fi
-}
-ipchange(){
-v4=$(curl -s4m5 icanhazip.com -k)
-v6=$(curl -s6m5 icanhazip.com -k)
-if [[ -z "$v4" ]]; then
-vps_ipv4='无IPV4'      
 vps_ipv6="$v6"
 elif [[ -n "$v4" && -n "$v6" ]]; then
 vps_ipv4="$v4"    
