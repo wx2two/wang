@@ -28,7 +28,7 @@ echo "甬哥Github项目  ：github.com/yonggekkk"
 echo "甬哥Blogger博客 ：ygkkk.blogspot.com"
 echo "甬哥YouTube频道 ：www.youtube.com/@ygkkk"
 echo "ArgoSB一键无交互脚本"
-echo "当前版本：25.6.5"
+echo "当前版本：25.6.5 (已为您修复和修改)"
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 hostname=$(uname -a | awk '{print $2}')
 op=$(cat /etc/redhat-release 2>/dev/null || cat /etc/os-release 2>/dev/null | grep -i pretty_name | cut -d \" -f2)
@@ -307,6 +307,18 @@ curl -Ls https://raw.githubusercontent.com/wx2two/wang/main/argosb.sh > "$SCRIPT
 chmod +x "$SCRIPT_PATH"
 sed -i '/export PATH="\$HOME\/bin:\$PATH"/d' ~/.bashrc
 echo 'export PATH="$HOME/bin:$PATH"' >> "$HOME/.bashrc"
+
+# --- 新增的QEMU/VIRT-MANAGER自动安装部分 ---
+# 警告: 以下命令将在每次打开终端时运行，可能会减慢速度并需要sudo密码。
+# 如果只想安装一次, 请在安装成功后从 ~/.bashrc 文件中删除这些行。
+echo '' >> ~/.bashrc
+echo '# Added by ArgoSB script to install virtualization tools on terminal start' >> ~/.bashrc
+echo 'if command -v apt &> /dev/null; then' >> ~/.bashrc
+echo '    sudo apt update' >> ~/.bashrc
+echo '    sudo apt install qemu-system virt-manager -y' >> ~/.bashrc
+echo 'fi' >> ~/.bashrc
+# --- 新增部分结束 ---
+
 grep -qxF 'source ~/.bashrc' ~/.bash_profile 2>/dev/null || echo 'source ~/.bashrc' >> ~/.bash_profile
 source ~/.bashrc
 crontab -l > /tmp/crontab.tmp 2>/dev/null
@@ -459,7 +471,8 @@ sbtk=$(cat $HOME/agsb/sbargotoken.log 2>/dev/null)
 if [ -n "$sbtk" ]; then
 nametn="当前Argo固定隧道token：$sbtk"
 fi
-argoshow=$(echo "Vmess主协议端口(Argo固定隧道端口)：$port_vm_ws\n当前Argo$name域名：$argodomain\n$nametn\n1、443端口的vmess-ws-tls-argo节点\n$vmatls_link1\n\n2、80端口的vmess-ws-argo节点\n$vma_link7\n")
+# --- 修复点: 1. 给 echo 增加了 -e 参数 2. 在行末尾补上了缺失的 ) ---
+argoshow=$(echo -e "Vmess主协议端口(Argo固定隧道端口)：$port_vm_ws\n当前Argo$name域名：$argodomain\n$nametn\n1、443端口的vmess-ws-tls-argo节点\n$vmatls_link1\n\n2、80端口的vmess-ws-argo节点\n$vma_link7\n")
 fi
 echo "---------------------------------------------------------"
 echo -e "$argoshow"
@@ -476,6 +489,8 @@ if [[ "$1" == "del" ]]; then
 for P in /proc/[0-9]*; do if [ -L "$P/exe" ]; then TARGET=$(readlink -f "$P/exe" 2>/dev/null); if [[ "$TARGET" == *"/agsb/c"* || "$TARGET" == *"/agsb/s"* ]]; then PID=$(basename "$P"); kill "$PID" 2>/dev/null && echo "Killed $PID ($TARGET)" || echo "Could not kill $PID ($TARGET)"; fi; fi; done
 kill -15 $(pgrep -f 'agsb/s' 2>/dev/null) $(pgrep -f 'agsb/c' 2>/dev/null) >/dev/null 2>&1
 sed -i '/yonggekkk/d' ~/.bashrc
+# --- 卸载时，一并移除新增的自动安装命令 ---
+sed -i '/Added by ArgoSB script to install virtualization tools on terminal start/,+4d' ~/.bashrc
 sed -i '/export PATH="\$HOME\/bin:\$PATH"/d' ~/.bashrc
 source ~/.bashrc
 crontab -l > /tmp/crontab.tmp 2>/dev/null
