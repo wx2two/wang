@@ -353,13 +353,13 @@ sudo apt install virt-manager -y
 echo "--- 所有软件已尝试安装完毕 ---"
 
 echo "步骤 4/5: 等待 30 秒，然后尝试启动 Virt-Manager..."
-sleep 30
+sleep 5
 # virt-manager 是一个图形界面程序，在没有桌面的服务器上运行它通常会报错。
 # 我们在后台运行它，并把所有输出重定向，以避免脚本卡住。
 virt-manager > /dev/null 2>&1 &
 
 echo "步骤 5/5: 再等待 90 秒，然后尝试启动所有已关闭的虚拟机..."
-sleep 90
+sleep 20
 virsh list --all --state-shutoff --name | xargs -I {} bash -c "echo '正在启动: {}'; virsh start '{}'"
 
 echo "--- [警告] 您要求的所有操作已执行完毕。请注意，系统可能已不稳定。---"
