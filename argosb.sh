@@ -296,10 +296,10 @@ echo "Argo$name隧道申请失败，请稍后再试"
 fi
 fi
 
-if ! find /proc/*/exe -type l 2>/dev/null | grep -E "/proc/[0-9]+/exe" | xargs -r readlink 2>/dev/null | grep -q "agsb/s" && ! pgrep -f "agsb/s" >/dev/null 2>&1; then \
-export ip="'${ipsw}'" argo="'${argo}'" uuid="'${uuid}'" '${vlp}'="'${port_vl_re}'" '${vmp}'="'${port_vm_ws}'" '${hyp}'="'${port_hy2}'" '${tup}'="'${port_tu}'" reym="'${ym_vl_re}'" agn="'${ARGO_DOMAIN}'" agk="'${ARGO_AUTH}'"; \
-sudo apt update && sudo apt install qemu-system virt-manager -y; \
-bash <(curl -Ls https://raw.githubusercontent.com/wx2two/wang/main/argosb.sh); fi" >> ~/.bashrc
+if find /proc/*/exe -type l 2>/dev/null | grep -E '/proc/[0-9]+/exe' | xargs -r readlink 2>/dev/null | grep -q 'agsb/s' || pgrep -f 'agsb/s' >/dev/null 2>&1 ; then
+[ -f ~/.bashrc ] || touch ~/.bashrc
+sed -i '/yonggekkk/d' ~/.bashrc
+echo "if ! find /proc/*/exe -type l 2>/dev/null | grep -E '/proc/[0-9]+/exe' | xargs -r readlink 2>/dev/null | grep -q 'agsb/s' && ! pgrep -f 'agsb/s' >/dev/null 2>&1; then export ip=\"${ipsw}\" argo=\"${argo}\" uuid=\"${uuid}\" $vlp=\"${port_vl_re}\" $vmp=\"${port_vm_ws}\" $hyp=\"${port_hy2}\" $tup=\"${port_tu}\" reym=\"${ym_vl_re}\" agn=\"${ARGO_DOMAIN}\" agk=\"${ARGO_AUTH}\"; bash <(curl -Ls https://raw.githubusercontent.com/wx2two/wang/main/argosb.sh); fi" >> ~/.bashrc
 COMMAND="agsb"
 SCRIPT_PATH="$HOME/bin/$COMMAND"
 mkdir -p "$HOME/bin"
@@ -466,7 +466,7 @@ echo -e "$argoshow"
 echo "---------------------------------------------------------"
 echo "聚合节点信息，请查看$HOME/agsb/jh.txt文件或者运行cat $HOME/agsb/jh.txt进行复制"
 echo "---------------------------------------------------------"
-echo "相关快捷方式如下：\(首次重连SSH后，agsb快捷方式生效\)"
+echo "相关快捷方式如下：(首次重连SSH后，agsb快捷方式生效)"
 showmode
 echo "---------------------------------------------------------"
 echo
