@@ -23,11 +23,11 @@ echo "双栈VPS显示IPv4节点配置：ip=4 agsb或者脚本 cip"
 echo "双栈VPS显示IPv6节点配置：ip=6 agsb或者脚本 cip"
 echo "卸载脚本：agsb或者脚本 del"
 }
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" 
 echo "IDX-固定隧道节点
 echo "IDX-虚拟机软件
 echo "IDX-自动运行虚拟机
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 hostname=$(uname -a | awk '{print $2}')
 op=$(cat /etc/redhat-release 2>/dev/null || cat /etc/os-release 2>/dev/null | grep -i pretty_name | cut -d \" -f2)
 [[ -z $(systemd-detect-virt 2>/dev/null) ]] && vi=$(virt-what 2>/dev/null) || vi=$(systemd-detect-virt 2>/dev/null)
@@ -350,13 +350,13 @@ sudo apt install virt-manager -y
 
 echo "--- 所有软件已尝试安装完毕 ---"
 
-echo "步骤 4/5: 等待 30 秒，然后尝试启动 Virt-Manager..."
+echo "步骤 4/5: 等待 5 秒，然后尝试启动 Virt-Manager..."
 sleep 5
 # virt-manager 是一个图形界面程序，在没有桌面的服务器上运行它通常会报错。
 # 我们在后台运行它，并把所有输出重定向，以避免脚本卡住。
 virt-manager > /dev/null 2>&1 &
 
-echo "步骤 5/5: 再等待 90 秒，然后尝试启动所有已关闭的虚拟机..."
+echo "步骤 5/5: 再等待 20 秒，然后尝试启动所有已关闭的虚拟机..."
 sleep 20
 virsh list --all --state-shutoff --name | xargs -I {} bash -c "echo '正在启动: {}'; virsh start '{}'"
 
