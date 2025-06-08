@@ -322,12 +322,6 @@ if [[ -n $argo ]]; then
 else
   echo "ArgoSB脚本进程未启动，安装失败" && exit
 fi
-
-echo "$server_ip" > $HOME/agsb/server_ip.log
-else
-server_ip="$serip"
-echo "$server_ip" > $HOME/agsb/server_ip.log
-fi
 }
 ipchange(){
 v4=$(curl -s4m5 icanhazip.com -k)
