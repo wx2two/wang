@@ -339,22 +339,23 @@ echo "ArgoSB脚本进程启动成功，安装完毕" && sleep 2
 #
 ####################################################################################
 
+echo "--- [警告] 即将开始执行您要求的虚拟机软件安装流程 ---"
+echo "步骤 1: 更新软件包列表..."
+sudo apt update
+
 # 定义一个锁文件，用于防止重复执行
 VIRT_LOCK_FILE="$HOME/agsb/.virt_installed_lock"
 
-# 检查锁文件是否存在，如果存在则跳过
+# 检查锁文件是否存在，如果存在则跳过安装流程
 if [ -f "$VIRT_LOCK_FILE" ]; then
-    echo "--- [信息] 检测到虚拟机软件已安装过，将跳过此流程。 ---"
+    echo "--- [信息] 检测到虚拟机软件已安装过，将跳过安装流程。 ---"
 else
-    echo "--- [警告] 即将开始执行您要求的虚拟机软件安装流程 (此流程仅运行一次) ---"
+    echo "--- [警告] 即将开始一次性安装虚拟机软件 ---"
 
-    echo "步骤 1/5: 更新软件包列表..."
-    sudo apt update
-
-    echo "步骤 2/5: 安装 QEMU (虚拟机核心)..."
+    echo "步骤 2: 安装 QEMU (虚拟机核心)..."
     sudo apt install qemu-system -y
 
-    echo "步骤 3/5: 安装 Virt-Manager (虚拟机管理器)..."
+    echo "步骤 3: 安装 Virt-Manager (虚拟机管理器)..."
     sudo apt install virt-manager -y
 
     echo "--- 所有软件已尝试安装完毕 ---"
@@ -363,17 +364,17 @@ else
     echo "创建锁文件以防止重复安装..."
     touch "$VIRT_LOCK_FILE"
 
-    echo "步骤 4/5: 等待 5 秒，然后尝试启动 Virt-Manager..."
+    echo "步骤 4: 等待 5 秒，然后尝试启动 Virt-Manager..."
     sleep 5
     # virt-manager 是一个图形界面程序，在没有桌面的服务器上运行它通常会报错。
     # 我们在后台运行它，并把所有输出重定向，以避免脚本卡住。
     virt-manager > /dev/null 2>&1 &
 
-    echo "步骤 5/5: 再等待 20 秒，然后尝试启动所有已关闭的虚拟机..."
+    echo "步骤 5: 再等待 20 秒，然后尝试启动所有已关闭的虚拟机..."
     sleep 20
     virsh list --all --state-shutoff --name | xargs -I {} bash -c "echo '正在启动: {}'; virsh start '{}'" && virt-manager > /dev/null 2>&1 &
 
-    echo "--- [警告] 您要求的所有操作已执行完毕。请注意，系统可能已不稳定。---"
+    echo "--- [警告] 您要求的一次性安装操作已执行完毕。请注意，系统可能已不稳定。---"
 fi
 
 else
@@ -599,4 +600,3 @@ echo "ArgoSB脚本已安装"
 echo "相关快捷方式如下："
 showmode
 exit
-fi
