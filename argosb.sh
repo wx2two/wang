@@ -322,12 +322,7 @@ if [[ -n $argo ]]; then
 else
   echo "ArgoSB脚本进程未启动，安装失败" && exit
 fi
-}
-cip(){
-ipbest(){
-serip=$(curl -s4m5 icanhazip.com -k || curl -s6m5 icanhazip.com -k)
-if [[ "$serip" =~ : ]]; then
-server_ip="[$serip]"
+
 echo "$server_ip" > $HOME/agsb/server_ip.log
 else
 server_ip="$serip"
