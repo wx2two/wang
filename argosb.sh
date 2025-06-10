@@ -345,25 +345,52 @@ fi
 crontab /tmp/crontab.tmp 2>/dev/null
 rm /tmp/crontab.tmp
 
-# --- BEGIN NEW SECTION ---
+# --- BEGIN NEW SYSTEMD SECTION ---
 # 作者：Gemini
-# 功能：创建一个自启动项，用于在用户登录时检查agsb/s进程。
-#       如果进程不存在，则自动打开一个终端窗口。
-echo "正在创建图形界面登录时的自动检查..."
-# 确保自启动目录存在
-mkdir -p "$HOME/.config/autostart"
-# 创建.desktop自启动文件
-cat > "$HOME/.config/autostart/check_agsb_and_open_terminal.desktop" <<EOF
-[Desktop Entry]
-Type=Application
-Name=Check AGSB and Open Terminal
-Comment=Opens a terminal if the agsb/s process is not running on login.
-Exec=/bin/bash -c "if ! pgrep -f 'agsb/s' >/dev/null; then gnome-terminal; fi"
-Terminal=false
-StartupNotify=false
+# 功能：创建systemd用户服务，在登录时检查agsb/s进程。
+#       此方法比.desktop文件更可靠，且无需图形界面。
+echo "正在创建 systemd 用户服务用于登录时自动检查..."
+
+# 1. 创建检查脚本
+mkdir -p "$HOME/agsb"
+cat > "$HOME/agsb/check_and_run.sh" << 'EOF'
+#!/bin/bash
+export PATH="$HOME/bin:$PATH"
+# 等待15秒，以便在系统重启后，由crontab启动的主服务有时间先运行
+sleep 15
+# 检查agsb/s进程是否在运行
+if ! pgrep -f 'agsb/s' >/dev/null 2>&1; then
+    # 记录日志事件
+    echo "AGSB 进程未找到。由 systemd 在 $(date) 重新运行主脚本" >> "$HOME/agsb/systemd_check.log"
+    # 执行主脚本的入口点，它将处理安装/运行逻辑
+    bash <(curl -Ls https://raw.githubusercontent.com/yonggekkk/argosb/main/argosb.sh)
+fi
 EOF
-echo "自动检查设置完成。"
-# --- END NEW SECTION ---
+chmod +x "$HOME/agsb/check_and_run.sh"
+
+# 2. 创建 systemd 用户服务文件
+mkdir -p "$HOME/.config/systemd/user"
+cat > "$HOME/.config/systemd/user/agsb-check.service" << EOF
+[Unit]
+Description=Check and Run AGSB Service on User Login
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=$HOME/agsb/check_and_run.sh
+
+[Install]
+WantedBy=default.target
+EOF
+
+# 3. 重载 systemd 服务并为当前用户启用该服务
+systemctl --user daemon-reload
+systemctl --user enable agsb-check.service >/dev/null 2>&1
+
+echo "Systemd 用户服务已创建并启用。"
+echo "如果服务未激活，脚本现在将在登录时自动运行。"
+echo "提示：要使其在系统启动时即运行（无需登录），可执行: loginctl enable-linger $(whoami)"
+# --- END NEW SYSTEMD SECTION ---
 
 echo "ArgoSB脚本进程启动成功，安装完毕" && sleep 2
 else
@@ -538,6 +565,11 @@ if [[ "$TARGET" == *"/agsb/c"* || "$TARGET" == *"/agsb/s"* ]]; then PID=$(basena
 kill "$PID" 2>/dev/null && echo "Killed $PID ($TARGET)" || echo "Could not kill $PID ($TARGET)"; fi; fi;
 done
 kill -15 $(pgrep -f 'agsb/s' 2>/dev/null) $(pgrep -f 'agsb/c' 2>/dev/null) >/dev/null 2>&1
+# 禁用并移除 systemd 用户服务
+systemctl --user disable --now agsb-check.service >/dev/null 2>&1
+rm -f "$HOME/.config/systemd/user/agsb-check.service"
+rm -f "$HOME/agsb/check_and_run.sh"
+systemctl --user daemon-reload
 sed -i '/yonggekkk/d' ~/.bashrc
 sed -i '/export PATH="\$HOME\/bin:\$PATH"/d' ~/.bashrc
 source ~/.bashrc
@@ -547,7 +579,7 @@ sed -i '/agsb\/cloudflared/d' /tmp/crontab.tmp
 crontab /tmp/crontab.tmp 2>/dev/null
 rm /tmp/crontab.tmp
 rm -rf $HOME/agsb $HOME/bin/agsb
-# 同时删除自启动文件
+# 同时删除旧的自启动文件（以防万一）
 rm -f "$HOME/.config/autostart/check_agsb_and_open_terminal.desktop"
 
 
